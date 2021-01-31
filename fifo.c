@@ -3,7 +3,7 @@
  * Date: Jan 30 2021
  * Description: A generic, thread-safe FIFO buffer. Buffers data pointers. Includes priority functionality
  * **/
-#include <fifo.h>
+#include "fifo.h"
 fifo_node_t* g_sentinel; //global used to ensure sentinel node never removed from list
 
 //linked list manipulation functions
