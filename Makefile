@@ -1,6 +1,6 @@
-CC = gcc
-CFLAGS =  -fPIC -Wall -lpthread
-LDFLAGS =  -fPIC -pthread
+CC = gcc 
+CFLAGS =  -fPIC -Wall -Wextra -O2 -g 
+LDFLAGS =   -shared
 RM = rm -f
 TARGET_LIB = libfifo.so
 
