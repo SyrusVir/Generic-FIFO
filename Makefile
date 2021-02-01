@@ -1,23 +1,16 @@
-CC = gcc 
-CFLAGS =  -fPIC -Wall -Wextra -O2 -g 
-LDFLAGS =   -shared
-RM = rm -f
-TARGET_LIB = libfifo.so
+CC = gcc
+CCFLAGS = -O -c
+LIBS = -lpthread
 
-SRCS = fifo.c
-OBJS = $(SRCS:.c=.o)
+all: libfifo.a
+	
+fifo.o: fifo.c fifo.h
+	gcc -O -c fifo.c
 
-.PHONY: all
-all: ${TARGET_LIB}
+libfifo.a: fifo.o
+	ar rcs libfifo.a fifo.o
 
-$(TARGET_LIB): $(OBJS)
-	$(CC) ${LDFLAGS} -o $@ $^
+libs: libmylib.all
 
-$(SRCS:.c=.d):%.d:%.c
-	$(CC) $(CFLAGS) -MM $< >$@
-
-include $(SRCS:.c=.d)
-
-.PHONY: clean
 clean:
-	-${RM} ${TARGET_LIB} ${OBJS} ${SRCS.c=.d}
+	rm -f *.o *.a *.gch

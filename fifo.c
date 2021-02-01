@@ -137,9 +137,7 @@ int fifoPush(fifo_buffer_t* buffer, void* data, int priority, bool blocking) {
         } //For non-negative priorities, find node of equal or greater priority. Insert new node before.
 
         buffer->buffer_occupancy++;
-        printf("FIFO AFTER PUSH\n");
-        printf("Occupancy=%d\n", buffer->buffer_occupancy);
-        fifoPrint(buffer);
+
         pthread_cond_signal(&buffer->cond_nonempty);
         pthread_mutex_unlock(&buffer->lock);
     } // continue if lock successfully obtained
@@ -172,9 +170,7 @@ void* fifoPull(fifo_buffer_t* buffer, bool blocking) {
         fifo_node_t* rec = removeNode(buffer->sentinel->prev);  //save buffer tail
         
         buffer->buffer_occupancy--;
-        printf("FIFO AFTER PULL\n");
-        printf("Occupancy=%d\n", buffer->buffer_occupancy);
-        fifoPrint(buffer);
+        
         pthread_cond_signal(&buffer->cond_nonfull);
         pthread_mutex_unlock(&buffer->lock);
         
