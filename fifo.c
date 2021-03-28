@@ -4,7 +4,6 @@
  * Description: A generic, thread-safe FIFO buffer. Buffers data pointers. Includes priority functionality
  * **/
 #include "fifo.h"
-fifo_node_t* g_sentinel; //global used to ensure sentinel node never removed from list
 
 //linked list manipulation functions
 void addNodeAfter(fifo_node_t* curr_node, fifo_node_t* new_node) {
@@ -14,8 +13,8 @@ void addNodeAfter(fifo_node_t* curr_node, fifo_node_t* new_node) {
     curr_node->next = new_node;
 }
 
-fifo_node_t* removeNode(fifo_node_t* node) {
-    if (node == g_sentinel) {
+fifo_node_t* removeNode(fifo_buffer_t* buffer, fifo_node_t* node) {
+    if (node == buffer->sentinel) {
         perror("Sentinel node cannot be removed from FIFO.");
         return NULL;
     }
@@ -60,8 +59,11 @@ void* fifoNodeDestroy(fifo_node_t* node) {
 
 fifo_buffer_t* fifoBufferInit(int max_buffer_size) {
     fifo_buffer_t *buffer = (fifo_buffer_t*) malloc(sizeof(fifo_buffer_t));
-
-    pthread_mutex_init(&buffer->lock,NULL);
+    
+    pthread_mutexattr_t mutex_attr;
+    pthread_mutexattr_init(&mutex_attr);
+    pthread_mutexattr_settype(&mutex_attr, PTHREAD_MUTEX_ERRORCHECK);
+    pthread_mutex_init(&buffer->lock,&mutex_attr);
     pthread_cond_init(&buffer->cond_nonfull,NULL);
     pthread_cond_init(&buffer->cond_nonempty,NULL);
     buffer->max_buffer_size = max_buffer_size;
@@ -69,7 +71,6 @@ fifo_buffer_t* fifoBufferInit(int max_buffer_size) {
     buffer->sentinel = fifoNodeCreate(NULL,0);
     buffer->sentinel->next = buffer->sentinel;
     buffer->sentinel->prev = buffer->sentinel;
-    g_sentinel = buffer->sentinel;
     return buffer;
 }
 
@@ -117,6 +118,7 @@ int fifoPush(fifo_buffer_t* buffer, void* data, int priority, bool blocking) {
                 if (cond_status != 0) return cond_status; 
             } //if blocking set, wait until nonfull signal is emitted
             else {
+                pthread_mutex_unlock(&buffer->lock);
                 return -1;
             } //otw return immediately with -1;
         } //If buffer full, wait or return
@@ -162,12 +164,13 @@ void* fifoPull(fifo_buffer_t* buffer, bool blocking) {
                 if (cond_status != 0) return NULL;
             } //if blocking set, wait until nonempty signal is emitted
             else {
+                pthread_mutex_unlock(&buffer->lock);
                 return NULL;
-            } //otw return immediately with NULL;
+            } //otw unlock acquired mutex and return with NULL;
         } //If buffer empty, wait or return
 
         //This point is reached if the buffer is available and nonempty
-        fifo_node_t* rec = removeNode(buffer->sentinel->prev);  //save buffer tail
+        fifo_node_t* rec = removeNode(buffer, buffer->sentinel->prev);  //remove node at buffer tail
         
         buffer->buffer_occupancy--;
         
