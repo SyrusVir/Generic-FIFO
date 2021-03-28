@@ -14,6 +14,7 @@ void* recThread(void* arg_fifo_buff)
     do
     {
         int* recv = (int*)fifoPull(fifo_buff, true);
+        usleep(50);
         recv_int = *recv;
         free(recv);
         printf("recv_int=%d\n", recv_int);
@@ -32,17 +33,23 @@ int main()
 
     pthread_create(&rec_thread, &attr, &recThread, buff);
 
-    for (int i = 0; i < 50; i++)
+    for (int i = 0; i < 9; i++)
     {
         int* data = (int*)malloc(sizeof(int));
         *data = i;
         fifoPush(buff, data, 0, false);
         printf("pushed %d\n", *data);
+        free(data);
     }
     int* data = (int*)malloc(sizeof(int));
     *data = -1;
     fifoPush(buff, data, 0, true);
     printf("pushed %d\n", *data);
+    for(int** flush = (int**)fifoBufferClose(buff); *flush != NULL; flush++)
+    {
+        printf("%d ", **flush);
+    }
+
     pthread_join(rec_thread, NULL);
     return 0;
 }
