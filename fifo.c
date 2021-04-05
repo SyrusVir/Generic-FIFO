@@ -212,8 +212,6 @@ void** fifoFlush(fifo_buffer_t* buffer, bool blocking)
         void** out = (void*) calloc(buffer->buffer_occupancy + 1,sizeof(void*));
 
         //iterate over current FIFO nodes
-        fifo_node_t* p_tmp; //temporary pointer
-        fifo_node_t* p = buffer->sentinel->next; //first node in FIFO
         int i = 0;
         while (buffer->sentinel->prev != buffer->sentinel) 
         {
