@@ -64,7 +64,7 @@
     int fifoPush(fifo_buffer_t* buffer, void* data, int priority, bool blocking);
 
     //Pull next data from FIFO pointed to by buffer. If blocking is false and buffer is empty,
-    //this function returns -1.
+    //this function returns NULL.
     void* fifoPull(fifo_buffer_t* buffer, bool blocking);
 
     // Empties FIFO, returning the contents in a NULL terminated array in first-out order (i.e. index 0 is first out) 
